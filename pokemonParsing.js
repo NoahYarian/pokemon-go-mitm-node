@@ -1,15 +1,21 @@
-module.exports = {
+var movesetsByAtk = require('./movesetsByAtk');
 
-  // parse THIS_DUMB_SHIT to This Dumb Shit
-  calm: function (intensity) {
-    var calm = [];
-    var words = intensity.split("_");
-    for (var i = 0, word, letters; i < words.length; i++) {
+var api = {
+
+  // to parse    "move1": "BUBBLE_FAST",
+  //             "move2": "FLASH_CANNON",
+  //
+  // into        "move1": "Bubble",
+  //             "move2": "Flash Cannon",
+  parseAttackName: function (attackStr) {
+    var words = attackStr.split("_");
+    var attackWords = [];
+    for (var i = 0, word; i < words.length; i++) {
       word = words[i];
-      calm.push(this.capitalizeFirstLetter(word));
+      if (word === "FAST") { break; }
+      attackWords.push(api.capitalizeFirstLetter(word));
     }
-    var peace = calm.join(' ');
-    return peace;
+    return attackWords.join(' ');
   },
 
   capitalizeFirstLetter: function (string) {
@@ -49,28 +55,20 @@ module.exports = {
     return highIVs;
   },
 
-  // pokes.sort(this.sortBy.iv.ascending)
+  // pokes.sort(api.sortBy.iv)
   sortBy: {
-    iv: {
-      descending: function(a, b) {
+    iv: function(pokes) {
+      return pokes.sort(function(a, b) {
         if (a.iv > b.iv) {
           return -1;
         } else if (a.iv < b.iv) {
           return 1;
         }
         return 0;
-      },
-      ascending: function(a, b) {
-        if (a.iv > b.iv) {
-          return 1;
-        } else if (a.iv < b.iv) {
-          return -1;
-        }
-        return 0;
-      }
+      });
     },
-    name: {
-      abc: function(a, b) {
+    name: function(pokes) {
+      return pokes.sort(function(a, b) {
         var nameA = a.name.toUpperCase();
         var nameB = b.name.toUpperCase();
         if (nameA < nameB) {
@@ -80,19 +78,58 @@ module.exports = {
           return 1;
         }
         return 0;
-      },
-      zyx: function(a, b) {
-        var nameA = a.name.toUpperCase();
-        var nameB = b.name.toUpperCase();
-        if (nameA < nameB) {
+      });
+    },
+    moveset: function(pokes, rankType) {
+      var rankedArr = [];
+      var propName = "moveset" + api.capitalizeFirstLetter(rankType) + "Rank";
+      var pokesWithRank = api.addMovesetRankToPokes(pokes, rankType);
+
+      return pokesWithRank.sort(function(a, b) {
+        if (a[propName] > b[propName]) {
+          return -1;
+        } else if (a[propName] < b[propName]) {
           return 1;
         }
-        if (nameA > nameB) {
-          return -1;
-        }
         return 0;
+      });
+    }
+  },
+  findPokieMovesetRank: function(pokie, rankType) {
+    if (rankType !== "attack") { return; } // not implmenting yet
+
+    var basicAttack = api.parseAttackName(pokie.move1);
+    var chargeAttack = api.parseAttackName(pokie.move2);
+    console.log(basicAttack, "\n", chargeAttack);
+    for (var i = 0; i < movesetsByAtk.length; i++) {
+      if ( movesetsByAtk[i]["Basic Atk"] === basicAttack
+        && movesetsByAtk[i]["Charge Atk"] === chargeAttack ) {
+        console.log("Dis", movesetsByAtk[i]);
+        console.log(pokie.cp + "CP " + pokie.id + " with " + basicAttack + " and "
+                    + chargeAttack + " has moveset " + rankType + " ranking of " + (i + 1));
+        return i + 1;
       }
-    },
-    type: {}
+    }
+  },
+  addMovesetRankToPokie: function(pokie, rankType) {
+    if (rankType !== "attack") { return; } // not implmenting yet
+
+    var rank = api.findPokieMovesetRank(pokie, rankType);
+    var propName = "moveset" + api.capitalizeFirstLetter(rankType) + "Rank";
+    pokie[propName] = rank;
+    return pokie;
+  },
+  addMovesetRankToPokes: function(pokes, rankType) {
+    var start = Date.now();
+    var rankedPokes = [];
+    for (var i = 0; i < pokes.length; i++) {
+      rankedPokes[i] = api.addMovesetRankToPokie(pokes[i], rankType);
+    }
+    var elapsedMs = Date.now() - start;
+    console.log("Took " + elapsedMs + "ms");
+    console.log(movesetsByAtk);
+    return rankedPokes;
   }
 };
+
+module.exports = api;

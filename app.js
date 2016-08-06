@@ -1,12 +1,10 @@
-var bestMoveSets = require('./bestMovesetsSimple');
 var pokes = require('./currentPokemonByIV');
 var pokemonParsing = require('./pokemonParsing');
-// Workspace!
 
-(function pokeCheck() {
-  if (bestMoveSets && pokes && pokemonParsing) {
-    console.log("Ok!");
-  } else {
-    console.log("Bew!");
-  }
-})();
+// rank current pokemon by moveset attack rating
+console.log(pokemonParsing.findPokieMovesetRank(pokes[pokes.length-1], "attack"));
+
+// console.log(pokemonParsing.sortBy.moveset(pokes, "attack"));
+
+// var movesetsByAtk = require('./movesetsByAtk');
+// console.log(movesetsByAtk[0]);
