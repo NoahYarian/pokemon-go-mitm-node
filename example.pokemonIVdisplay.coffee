@@ -10,7 +10,6 @@ changeCase = require 'change-case'
 freshSesh = true
 
 server = new PokemonGoMITM port: 8081
-  # Always get the full inventory
   .addRequestHandler "GetInventory", (data) ->
     if data.inventory_delta and freshSesh
       freshSesh = false
@@ -30,7 +29,11 @@ server = new PokemonGoMITM port: 8081
           poke.def = pokemon.individual_defense ? 0
           poke.sta = pokemon.individual_stamina ? 0
           poke.iv = Math.round (poke.att + poke.def + poke.sta) * 100/45
-          pokes.push poke
+          unless poke.att is 0 and
+                 poke.def is 0 and
+                 poke.sta is 0
+            pokes.push poke
       console.log JSON.stringify pokes, null, 4
+    # Always get the full inventory
     data.last_timestamp_ms = 0
     data
