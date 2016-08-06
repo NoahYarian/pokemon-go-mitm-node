@@ -11,6 +11,13 @@ freshSesh = true
 
 server = new PokemonGoMITM port: 8081
   .addRequestHandler "GetInventory", (data) ->
+    console.log 'req'
+    # Always get the full inventory
+    data.last_timestamp_ms = Date.now() - 90*24*60*60*1000; #90 days ago
+    data
+
+  .addResponseHandler "GetInventory", (data) ->
+    console.log 'resp'
     if data.inventory_delta and freshSesh
       freshSesh = false
       pokes = []
@@ -34,6 +41,4 @@ server = new PokemonGoMITM port: 8081
                  poke.sta is 0
             pokes.push poke
       console.log JSON.stringify pokes, null, 4
-    # Always get the full inventory
-    data.last_timestamp_ms = 0
     data
