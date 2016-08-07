@@ -1,4 +1,6 @@
 var movesetsByAtk = require('./movesetsByAtk');
+var pokedex = require('./pokedecks');
+
 
 var api = {
 
@@ -83,7 +85,7 @@ var api = {
     },
     moveset: function(pokes, rankType) {
       var rankedArr = [];
-      var propName = "moveset" + api.capitalizeFirstLetter(rankType) + "Rank";
+      var propName = api.getMovesetRankTypePropName(rankType);
       var pokesWithRank = api.addMovesetRankToPokes(pokes, rankType);
 
       var sorted = pokesWithRank.sort(function(a, b) {
@@ -94,9 +96,6 @@ var api = {
         }
         return 0;
       });
-      for (var i = 0; i < sorted.length; i++) {
-        console.log(api.makePokieInfoString(sorted[i], rankType, sorted[i][propName]));
-      }
       return sorted;
     }
   },
@@ -105,13 +104,19 @@ var api = {
     // + chargeAttack + " has moveset " + rankType + " ranking of " + rank;
     var basicAttack = api.parseAttackName(pokie.move1);
     var chargeAttack = api.parseAttackName(pokie.move2);
-    // return `${pokie.cp}CP ${pokie.id} with ${basicAttack} and ` +
-    //   `${chargeAttack} has moveset ${rankType} ranking of ${rank}`;
-    // return `{ #${rank} ${rankType} }:[${pokie.id}, ${basicAttack}, ${chargeAttack}]:{ ${pokie.name}` +
-    //        ` ${pokie.iv}% ${pokie.cp} CP | ATT: ${pokie.att} DEF: ${pokie.def} STA: ${pokie.sta} }`
-    return ` #${api.padTrim(rank, 4)} ${api.padTrim(pokie.id, 11)} ${api.padTrim(pokie.iv, 2)}% ${api.padTrim(pokie.cp + "CP", 6)}` +
-      ` ${api.padTrim(basicAttack, 13)} ${api.padTrim(chargeAttack, 13)} ${api.padTrim(pokie.name, 11)}` +
-      ` | ATT: ${api.padTrim(pokie.att, 2)} DEF: ${api.padTrim(pokie.def, 2)} STA: ${api.padTrim(pokie.sta, 2)} |`;
+    return ``+
+      ` #${api.padTrim(rank, 4, "right")}`+
+      ` ${api.padTrim(pokie.id, 11)}`+
+      ` ${api.padTrim(pokie.iv, 2, "right")}%`+
+      ` ${api.padTrim(pokie.cp + "CP", 6, "right")}`+
+      ` ${api.padTrim(pokie.type1, 8)}`+
+      ` ${api.padTrim(pokie.type2, 8)}`+
+      ` ${api.padTrim(basicAttack, 13)}`+
+      ` ${api.padTrim(chargeAttack, 13)}`+
+      ` ${api.padTrim(pokie.name, 11)}`+
+      ` | ATT: ${api.padTrim(pokie.att, 2, "right")}`+
+      ` DEF: ${api.padTrim(pokie.def, 2, "right")}`+
+      ` STA: ${api.padTrim(pokie.sta, 2, "right")} |`;
       //TODO: would like to say how many candies I have and evolution stuff with stardust and time, etc, etc.
   },
   padTrim: function(str, len, align) {
@@ -146,7 +151,7 @@ var api = {
     }
     return str;
   },
-  findPokieMovesetRank: function(pokie, rankType) {
+  getPokieMovesetRank: function(pokie, rankType) {
     if (rankType !== "attack") { return; } // not implemented yet
     var basicAttack = api.parseAttackName(pokie.move1);
     var chargeAttack = api.parseAttackName(pokie.move2);
@@ -162,19 +167,40 @@ var api = {
   addMovesetRankToPokie: function(pokie, rankType) {
     if (rankType !== "attack") { return; } // not implemented yet
 
-    var rank = api.findPokieMovesetRank(pokie, rankType);
-    var propName = "moveset" + api.capitalizeFirstLetter(rankType) + "Rank";
+    var rank = api.getPokieMovesetRank(pokie, rankType);
+    var propName = api.getMovesetRankTypePropName(rankType)
     pokie[propName] = rank;
     return pokie;
   },
+  getMovesetRankTypePropName: function(rankType) {
+    return "moveset" + api.capitalizeFirstLetter(rankType) + "Rank"
+  },
   addMovesetRankToPokes: function(pokes, rankType) {
-    var start = Date.now();
     var rankedPokes = [];
     for (var i = 0; i < pokes.length; i++) {
       rankedPokes[i] = api.addMovesetRankToPokie(pokes[i], rankType);
     }
-    var elapsedMs = Date.now() - start;
     return rankedPokes;
+  },
+  getPokieTypes: function(pokie) {
+    for (var i = 0; i < pokedex.length; i++) {
+      if (pokedex[i].name === pokie.id) {
+        return pokedex[i].types
+      }
+    }
+  },
+  addTypesToPokie: function(pokie) {
+    var types = api.getPokieTypes(pokie);
+    pokie.type1 = types[0];
+    pokie.type2 = types[1] || null;
+    return pokie;
+  },
+  addTypesToPokes: function(pokes) {
+    var typedPokes = pokes;
+    for (var i = 0; i < pokes.length; i++) {
+      typedPokes[i] = api.addTypesToPokie(pokes[i]);
+    }
+    return typedPokes;
   }
 };
 
