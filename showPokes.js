@@ -9,16 +9,17 @@ module.exports = {
       return pokie.type1 === type || pokie.type2 === type;
     });
 
-    for (var i = 0; i < sorted.length; i++) {
+    for (var i = 0, infoString; i < sorted.length; i++) {
       if ( type
         && type !== sorted[i].type1
         && type !== sorted[i].type2) {
         continue;
       }
+      infoString = pokemonParsing.makePokieInfoString(sorted[i], "attack", sorted[i].movesetAttackRank);
       if (i === 0) {
-        console.log(`\n${utils.hr(115)}\n   |${type}\n`)
+        console.log(`\n${utils.hr(infoString.length)}\n   |${type}\n`)
       }
-      console.log(pokemonParsing.makePokieInfoString(sorted[i], "attack", sorted[i].movesetAttackRank));
+      console.log(infoString);
     }
   }
 }

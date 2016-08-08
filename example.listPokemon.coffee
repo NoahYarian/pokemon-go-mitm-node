@@ -2,37 +2,44 @@
   Pokemon Go(c) MITM node proxy
   by Michael Strassburger <codepoet@cpan.org>
 
-  Get and parse pokemon stats
+  Example by Noah Yarian <noah.yarian.gmail.com>
+
+  See how your pokemon stack up
 ###
 
 PokemonGoMITM = require './lib/pokemon-go-mitm'
 changeCase = require 'change-case'
+hasMadeRequest = false
 
 server = new PokemonGoMITM port: 8081
   .addRequestHandler "GetInventory", (data) ->
+    if hasMadeRequest then return
     # We set the timestamp for some time in the first week of play. This seems like a value to be careful with,
-    # as the api returns responses for values outside the range of what makes sense for the client to send.
-    #
-    # I think a clear solution here is to move to using a database
-    #
-    randomIntFromInterval (min,max) ->
+    # because though the api returns responses for values outside the range of what makes sense for the client
+    # to send, we don't know what logging is going on. For me the whole point of this kind of a solution is to
+    # only observe, and to not modify.
+
+    randomIntFromInterval = (min, max) ->
       Math.floor Math.random()*(max-min+1)+min
-    min = new Date("July 7, 2016").getTime()
-    max = new Date("July 14, 2016").getTime()
-    data.last_timestamp_ms = randomIntFromInterval min, max
+
+    minMs = new Date("June 17, 2016").getTime()
+    maxMs = new Date("June 24, 2016").getTime()
+    data.last_timestamp_ms = randomIntFromInterval minMs, maxMs
     console.log "req timestamp: " + data.last_timestamp_ms
-    # data.last_timestamp_ms =
-    #  Date.now() - 90*24*60*60*1000; #90 days ago
+    # reqs for the first week of play might also be weird. Should use a DB. Another idea:
+    # Date.now() - 90*24*60*60*1000;   #90 days ago
+    hasMadeRequest = true
     data
 
   .addResponseHandler "GetInventory", (data) ->
     console.log 'resp'
-    if data.inventory_delta and freshSesh
-      freshSesh = false
+    if data.inventory_delta
       pokes = []
       for item in data.inventory_delta.inventory_items
         if item.inventory_item_data? and
-           item.inventory_item_data.pokemon_data?
+           item.inventory_item_data.pokemon_data? and
+           item.inventory_item.data.pokemon_data.pokemon_id? # excludes eggs
+
           pokemon = item.inventory_item_data.pokemon_data
           poke = {}
           poke.id = changeCase.titleCase pokemon.pokemon_id

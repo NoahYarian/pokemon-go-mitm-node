@@ -1,6 +1,7 @@
 var movesetsByAtk = require('./movesetsByAtk');
 var pokedex = require('./pokedecks');
-
+var pokedex2 = require('./pokemonInfo');
+var utils = require('./utils');
 
 var api = {
 
@@ -16,13 +17,9 @@ var api = {
     for (var i = 0, word; i < words.length; i++) {
       word = words[i];
       if (word === "FAST") { break; }
-      attackWords.push(api.capitalizeFirstLetter(word));
+      attackWords.push(utils.capitalizeFirstLetter(word));
     }
     return attackWords.join(' ');
-  },
-
-  capitalizeFirstLetter: function (string) {
-    return string.charAt(0).toUpperCase() + string.toLowerCase().slice(1);
   },
 
   groupPokemon: function (pokes) {
@@ -104,52 +101,22 @@ var api = {
     // + chargeAttack + " has moveset " + rankType + " ranking of " + rank;
     var basicAttack = api.parseAttackName(pokie.move1);
     var chargeAttack = api.parseAttackName(pokie.move2);
+    var canEvolveString = api.canPokieEvolve(pokie) ? "" : "evolved";
     return ``+
-      ` #${api.padTrim(rank, 4, "right")}`+
-      ` ${api.padTrim(pokie.id, 11)}`+
-      ` ${api.padTrim(pokie.iv, 2, "right")}%`+
-      ` ${api.padTrim(pokie.cp + "CP", 6, "right")}`+
-      ` ${api.padTrim(pokie.type1, 8)}`+
-      ` ${api.padTrim(pokie.type2, 8)}`+
-      ` ${api.padTrim(basicAttack, 13)}`+
-      ` ${api.padTrim(chargeAttack, 13)}`+
-      ` ${api.padTrim(pokie.name, 11)}`+
-      ` | ATT: ${api.padTrim(pokie.att, 2, "right")}`+
-      ` DEF: ${api.padTrim(pokie.def, 2, "right")}`+
-      ` STA: ${api.padTrim(pokie.sta, 2, "right")} |`;
+      `#${utils.padTrim(rank, 4, "right")}`+
+      ` ${utils.padTrim(pokie.id, 11)}`+
+      ` ${utils.padTrim(canEvolveString, 11)}`+
+      ` ${utils.padTrim(pokie.iv, 2, "right")}%`+
+      ` ${utils.padTrim(pokie.cp + "CP", 6, "right")}`+
+      ` ${utils.padTrim(pokie.type1, 8)}`+
+      ` ${utils.padTrim(pokie.type2, 8)}`+
+      ` ${utils.padTrim(basicAttack, 13)}`+
+      ` ${utils.padTrim(chargeAttack, 13)}`+
+      ` ${utils.padTrim(pokie.name, 11)}`+
+     `| ATT: ${utils.padTrim(pokie.att, 2, "right")}`+
+      ` DEF: ${utils.padTrim(pokie.def, 2, "right")}`+
+      ` STA: ${utils.padTrim(pokie.sta, 2, "right")} |`;
       //TODO: would like to say how many candies I have and evolution stuff with stardust and time, etc, etc.
-  },
-  padTrim: function(str, len, align) {
-    // when called with len = 10
-      // should change "" into "          "
-      // should change "bacon" into "bacon     "
-      // should change "SOOPERDOOPER" into "SOOPERDOOP"
-      // shouldn't change "fantarctic"
-    str = str || "";
-    str = String(str);
-    len = len || 0;
-    align = align || "left";
-
-    if (align === "left") {
-      if (str.length > len) {
-        var arr = str.split('');
-        arr.length = len;
-        str = arr.join('');
-      }
-      for (var i = str.length; i < len; i++) {
-        str += " ";
-      }
-    } else if (align === "right") {
-      var arr = str.split('');
-      while (arr.length > len) {
-        arr.shift();
-      }
-      while(arr.length < len) {
-        arr.unshift(" ")
-      }
-      str = arr.join('');
-    }
-    return str;
   },
   getPokieMovesetRank: function(pokie, rankType) {
     if (rankType !== "attack") { return; } // not implemented yet
@@ -180,7 +147,7 @@ var api = {
     return rankedPokes;
   },
   getMovesetRankTypePropName: function(rankType) {
-    return "moveset" + api.capitalizeFirstLetter(rankType) + "Rank"
+    return "moveset" + utils.capitalizeFirstLetter(rankType) + "Rank"
   },
   getPokieTypes: function(pokie) {
     for (var i = 0; i < pokedex.length; i++) {
@@ -221,7 +188,16 @@ var api = {
     "Dark",
     "Steel",
     "Fairy"
-  ]
+  ],
+  canPokieEvolve: function(pokie) {
+    for (var i = 0, pokedexPokie; i < pokedex2.length; i++) {
+      pokedexPokie = pokedex2[i];
+      if (pokie.id === pokedexPokie["Name"]) {
+        // console.log(pokedexPokie["Next evolution(s)"]);
+        return pokedexPokie["Next evolution(s)"];
+      }
+    }
+  }
 };
 
 module.exports = api;

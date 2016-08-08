@@ -23,7 +23,10 @@ function evolvePokes(rawPokes) {
 function processArgs(args) {
   var args = process.argv.slice(2);
 
-  if (args[0] === "type") {
+  if (args.length === 0) {
+    // no args passed, do default action
+    console.dir(pokemonParsing.sortBy.iv(pokes));
+  } else if (args[0] === "type") {
     processTypeArgs(args);
   }
 }

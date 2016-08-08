@@ -9,8 +9,8 @@
 PokemonGoMITM = require './lib/pokemon-go-mitm'
 
 # Uncomment if you want to filter the regular messages
-# ignore = ['GetHatchedEggs', 'DownloadSettings', 'GetInventory', 'CheckAwardedBadges', 'GetMapObjects']
-ignore = []
+ignore = ['GetHatchedEggs', 'DownloadSettings', 'GetInventory', 'CheckAwardedBadges', 'GetMapObjects']
+# ignore = []
 
 server = new PokemonGoMITM port: 8081
 	.addRequestHandler "*", (data, action) ->
