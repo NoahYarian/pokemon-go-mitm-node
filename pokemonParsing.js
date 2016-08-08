@@ -42,8 +42,8 @@ var api = {
   getMostPerfectPokemon: function (groupedPokes) {
     var highIVs = {};
 
-    for (var id in pokes) {
-      var pokesGroup = pokes[id];
+    for (var id in groupedPokes) {
+      var pokesGroup = groupedPokes[id];
       for (var i = 0; i < pokesGroup.length; i++) {
         if (highIVs[id] && highIVs[id].iv) {
           if (pokesGroup[i].iv > highIVs[id].iv) {
@@ -172,15 +172,15 @@ var api = {
     pokie[propName] = rank;
     return pokie;
   },
-  getMovesetRankTypePropName: function(rankType) {
-    return "moveset" + api.capitalizeFirstLetter(rankType) + "Rank"
-  },
   addMovesetRankToPokes: function(pokes, rankType) {
     var rankedPokes = [];
     for (var i = 0; i < pokes.length; i++) {
       rankedPokes[i] = api.addMovesetRankToPokie(pokes[i], rankType);
     }
     return rankedPokes;
+  },
+  getMovesetRankTypePropName: function(rankType) {
+    return "moveset" + api.capitalizeFirstLetter(rankType) + "Rank"
   },
   getPokieTypes: function(pokie) {
     for (var i = 0; i < pokedex.length; i++) {
@@ -201,7 +201,27 @@ var api = {
       typedPokes[i] = api.addTypesToPokie(pokes[i]);
     }
     return typedPokes;
-  }
+  },
+  pokemonTypes: [
+    "Normal",
+    "Fire",
+    "Fighting",
+    "Water",
+    "Flying",
+    "Grass",
+    "Poison",
+    "Electric",
+    "Ground",
+    "Psychic",
+    "Rock",
+    "Ice",
+    "Bug",
+    "Dragon",
+    "Ghost",
+    "Dark",
+    "Steel",
+    "Fairy"
+  ]
 };
 
 module.exports = api;
